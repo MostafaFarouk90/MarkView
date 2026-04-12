@@ -1,0 +1,5 @@
+{
+  "name": "MarkView",
+  "description": "A minimal, high-performance markdown editor with live preview, GFM support, and code highlighting.",
+  "requestFramePermissions": []
+}
