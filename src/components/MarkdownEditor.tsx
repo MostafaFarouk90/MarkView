@@ -302,7 +302,7 @@ export default function MarkdownEditor() {
                   <span>Live</span>
                 </div>
                 <ScrollArea className="flex-1 h-full">
-                  <div className="p-8 md:p-12 max-w-3xl mx-auto markdown-body">
+                  <div className="p-4 md:p-6 markdown-body">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]} 
                       rehypePlugins={[rehypeHighlight]}
