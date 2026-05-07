@@ -3,25 +3,27 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
-import { 
-  Bold, 
-  Italic, 
-  List, 
-  ListOrdered, 
-  Quote, 
-  Code, 
-  Image as ImageIcon, 
-  Link as LinkIcon, 
-  Download, 
-  Upload, 
-  Trash2, 
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Download,
+  Upload,
+  Trash2,
   FileText,
   Eye,
   Edit3,
   Columns,
   Maximize2,
-  Minimize2
+  Minimize2,
+  GitBranch
 } from 'lucide-react';
+import MermaidBlock from './MermaidBlock';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -67,6 +69,16 @@ greet('MarkView User');
 | GFM | ✅ |
 | Highlighting | ✅ |
 | Export | ✅ |
+
+### Mermaid Diagrams
+\`\`\`mermaid
+graph TD;
+    A[Start] --> B{Decision};
+    B -->|Yes| C[Do something];
+    B -->|No| D[Do something else];
+    C --> E[End];
+    D --> E;
+\`\`\`
 
 > "Markdown is a text-to-HTML conversion tool for web writers." - John Gruber
 `;
@@ -185,6 +197,7 @@ export default function MarkdownEditor() {
               <ToolbarButton onClick={() => insertText('`', '`')} icon={<Code size={18} />} tooltip="Inline Code" />
               <ToolbarButton onClick={() => imageInputRef.current?.click()} icon={<ImageIcon size={18} />} tooltip="Insert Image" />
               <ToolbarButton onClick={() => insertText('[', '](https://)')} icon={<LinkIcon size={18} />} tooltip="Link" />
+              <ToolbarButton onClick={() => insertText('\n```mermaid\ngraph TD;\n    A-->B;\n', '```\n')} icon={<GitBranch size={18} />} tooltip="Mermaid Diagram" />
             </div>
           </div>
 
@@ -303,9 +316,24 @@ export default function MarkdownEditor() {
                 </div>
                 <ScrollArea className="flex-1 h-full">
                   <div className="p-4 md:p-6 markdown-body">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]} 
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeHighlight]}
+                      components={{
+                        pre({ children, ...props }) {
+                          const child = React.Children.toArray(children)[0];
+                          if (React.isValidElement(child)) {
+                            const childProps = child.props as { className?: string; children?: React.ReactNode };
+                            if (childProps.className?.includes('language-mermaid')) {
+                              const chart = typeof childProps.children === 'string'
+                                ? childProps.children
+                                : String(childProps.children ?? '');
+                              return <MermaidBlock chart={chart} />;
+                            }
+                          }
+                          return <pre {...props}>{children}</pre>;
+                        },
+                      }}
                     >
                       {markdown || '*No content to preview*'}
                     </ReactMarkdown>
