@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   Download,
+  FileDown,
   Upload,
   Trash2,
   FileText,
@@ -165,6 +166,41 @@ export default function MarkdownEditor() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadHTML = () => {
+    const previewEl = document.querySelector('.markdown-body');
+    if (!previewEl) return;
+
+    const content = previewEl.innerHTML;
+
+    const styles: string[] = [];
+    for (const sheet of Array.from(document.styleSheets)) {
+      try {
+        for (const rule of Array.from(sheet.cssRules)) {
+          styles.push(rule.cssText);
+        }
+      } catch {
+        if (sheet.href) {
+          styles.push(`@import url("${sheet.href}");`);
+        }
+      }
+    }
+
+    const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MarkView Export</title>
+<style>${styles.join('\n')}</style>
+</head><body><div class="markdown-body" style="margin:0 auto;padding:40px">${content}</div></body></html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'document.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handlePrintPDF = () => {
     const previewEl = document.querySelector('.markdown-body');
     if (!previewEl) return;
@@ -275,6 +311,7 @@ export default function MarkdownEditor() {
             <div className="flex items-center gap-1">
               <ToolbarButton onClick={() => fileInputRef.current?.click()} icon={<Upload size={18} />} tooltip="Upload File" />
               <ToolbarButton onClick={handleDownload} icon={<Download size={18} />} tooltip="Download .md" />
+              <ToolbarButton onClick={handleDownloadHTML} icon={<FileDown size={18} />} tooltip="Download .html" />
               <ToolbarButton onClick={handlePrintPDF} icon={<Printer size={18} />} tooltip="Print PDF" />
               <ToolbarButton onClick={clearEditor} icon={<Trash2 size={18} />} tooltip="Clear Editor" variant="destructive" />
               <ToolbarButton 
