@@ -21,7 +21,8 @@ import {
   Columns,
   Maximize2,
   Minimize2,
-  GitBranch
+  GitBranch,
+  Printer
 } from 'lucide-react';
 import MermaidBlock from './MermaidBlock';
 import { Button } from '@/components/ui/button';
@@ -164,6 +165,46 @@ export default function MarkdownEditor() {
     URL.revokeObjectURL(url);
   };
 
+  const handlePrintPDF = () => {
+    const previewEl = document.querySelector('.markdown-body');
+    if (!previewEl) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const content = previewEl.innerHTML;
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>MarkView Export</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a1a; padding: 40px; line-height: 1.7; }
+  h1 { font-size: 2em; font-weight: 700; margin: 1.5em 0 0.5em; padding-bottom: 0.3em; border-bottom: 1px solid #e5e5e5; }
+  h2 { font-size: 1.5em; font-weight: 600; margin: 1.2em 0 0.4em; padding-bottom: 0.2em; border-bottom: 1px solid #e5e5e5; }
+  h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.4em; }
+  p { margin: 1em 0; }
+  ul, ol { margin: 1em 0; padding-left: 2em; }
+  li { margin: 0.25em 0; }
+  blockquote { padding-left: 1em; border-left: 4px solid #d1d5db; font-style: italic; color: #6b7280; margin: 1em 0; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; background: #f3f4f6; padding: 0.15em 0.4em; border-radius: 4px; }
+  pre { background: #f3f4f6; padding: 1em; border-radius: 8px; margin: 1em 0; overflow-x: auto; }
+  pre code { background: transparent; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+  th, td { padding: 0.5em; border: 1px solid #e5e5e5; text-align: left; }
+  th { background: #f3f4f6; font-weight: 600; }
+  img { max-width: 100%; height: auto; border-radius: 8px; margin: 1em 0; }
+  a { color: #2563eb; text-decoration: underline; }
+  hr { margin: 2em 0; border: none; border-top: 1px solid #e5e5e5; }
+  svg { max-width: 100%; height: auto; }
+  @media print { body { padding: 0; } }
+</style></head><body>${content}</body></html>`);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+      printWindow.onafterprint = () => printWindow.close();
+    };
+  };
+
   const clearEditor = () => {
     if (window.confirm('Are you sure you want to clear the editor? This action cannot be undone.')) {
       setMarkdown('');
@@ -234,6 +275,7 @@ export default function MarkdownEditor() {
             <div className="flex items-center gap-1">
               <ToolbarButton onClick={() => fileInputRef.current?.click()} icon={<Upload size={18} />} tooltip="Upload File" />
               <ToolbarButton onClick={handleDownload} icon={<Download size={18} />} tooltip="Download .md" />
+              <ToolbarButton onClick={handlePrintPDF} icon={<Printer size={18} />} tooltip="Print PDF" />
               <ToolbarButton onClick={clearEditor} icon={<Trash2 size={18} />} tooltip="Clear Editor" variant="destructive" />
               <ToolbarButton 
                 onClick={() => setIsFullscreen(!isFullscreen)} 
